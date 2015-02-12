@@ -27,7 +27,7 @@ backup-manager-purge - backup-manager's wrapper for outdating files
 
 =head1 SYNOPSIS
 
-backup-manager-purge [TTL] <options> 
+backup-manager-purge [TTL] <options>
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ is here to fulfill that need.
 
 Given a I<time to live (TTL)> and a list of archives, B<backup-manager-purge>
 will return another list of archives, corresponding to the ones that are
-outdated by the TTL. 
+outdated by the TTL.
 
 =head1 REQUIRED ARGS
 
@@ -181,11 +181,11 @@ sub parse_archive ($)
     else {
         return undef;
     }
-    
-    return { prefix => $prefix, 
-             name => $name, 
-             date => $date, 
-             master => $master, 
+
+    return { prefix => $prefix,
+             name => $name,
+             date => $date,
+             master => $master,
              filetype => $filetype};
 }
 
@@ -194,7 +194,7 @@ sub parse_archive ($)
 sub read_archives($$)
 {
     my ($ra_archives, $fh) = @_;
-    
+
     my $archive = "";
     while (<$fh>) {
         chomp();
@@ -202,17 +202,17 @@ sub read_archives($$)
         if (/^\s*(\S+)\s*$/) {
             $archive = $1;
         }
-        
+
         my $rh_data = parse_archive ($archive);
         next unless defined $rh_data;
         next unless defined $rh_data->{date};
-        
+
         if ($rh_data->{master}) {
             $g_rh_archives->{$rh_data->{name}}{pathByDateMasters}{$rh_data->{date}} = $archive;
         }
         $g_rh_archives->{$rh_data->{name}}{pathByDate}{$rh_data->{date}} = $archive;
         $g_rh_archives->{dataByPath}{$archive} = $rh_data;
-        
+
         push @{$ra_archives}, $archive;
     }
 }
@@ -228,7 +228,7 @@ sub outdate_master_archive($$$$$)
 }
 
 
-# Takes two array refs. Reads from the first one the list of archives 
+# Takes two array refs. Reads from the first one the list of archives
 # to process, and push in the second one the outdated archives.
 sub outdate_archives($$)
 {
@@ -238,10 +238,10 @@ sub outdate_archives($$)
         exit E_INTERNAL;
     }
 
-    my $purge_date = strftime ('%Y%m%d', 
-                               localtime(time() - $g_ttl * 24 * 3600)); 
+    my $purge_date = strftime ('%Y%m%d%H%M%S', 
+                               localtime(time() - $g_ttl * 24 * 3600));
     print_info "Outdating archives made before $purge_date";
-    
+
     my %seen = ();
     foreach my $archive (sort @{$ra_archives}) {
         my $data = $g_rh_archives->{dataByPath}{$archive};
@@ -249,7 +249,7 @@ sub outdate_archives($$)
         next unless defined $data->{date};
         next if $seen{$archive};
         $seen{$archive} = 1;
-       
+
         # if the date of the archive is older than $purge_date, we may have to outdate it
         # unless, nothing to do for that archive.
         next if ($data->{date} > $purge_date);
@@ -267,11 +267,11 @@ sub outdate_archives($$)
 
         # here the archive is deprecated, its date is < to $purge_date
         else {
-            # if BM_ARCHIVE_STRICTPURGE is true, we can only purge 
+            # if BM_ARCHIVE_STRICTPURGE is true, we can only purge
             # an archive prefixed with BM_ARCHIVE_PREFIX
-            next if (($ENV{BM_ARCHIVE_STRICTPURGE} eq "true") and 
+            next if (($ENV{BM_ARCHIVE_STRICTPURGE} eq "true") and
                      ($data->{prefix} ne $ENV{BM_ARCHIVE_PREFIX}));
-            
+
             # now, we're sure we can outdate the archive
             push @{$ra_outdated}, $archive;
         }
@@ -291,7 +291,7 @@ unless (defined $g_ttl) {
     exit E_INVALID;
 }
 
-# In    
+# In
 if (defined $g_filelist and -f $g_filelist) {
     print_info "Reading archives from $g_filelist";
     open $g_fh, $g_filelist or die "Unable to open $g_filelist";
